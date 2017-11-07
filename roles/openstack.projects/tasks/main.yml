@@ -1,0 +1,6 @@
+---
+# tasks file for openstack.projects
+- name: Include project tasks
+  tags: os_project
+  with_items: "{{ os_projects }}"
+  include: project.yml

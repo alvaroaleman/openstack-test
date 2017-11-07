@@ -1,0 +1,52 @@
+---
+- name: Set fact
+  tags: os_project
+  set_fact:
+    os_project: "{{ item }}"
+    os_project_auth:
+      username: "{{ os_auth.username }}"
+      password: "{{ os_auth.password }}"
+      auth_url: "{{ os_auth.auth_url }}"
+      project_domain_name: default
+      user_domain_name: default
+      project_name: "{{ item.name }}"
+
+- name: Create project
+  tags: os_project
+  os_project:
+    auth: "{{ os_project_auth }}"
+    name: "{{ os_project.name }}"
+
+- name: Get default security group id
+  tags: os_project
+  check_mode: false
+  changed_when: false
+  register: registered_secgroup_id
+  when: os_project.default_secgroup_allow_all|default(false)
+  shell:
+    openstack
+      --os-username {{ os_project_auth.username }}
+      --os-password {{ os_project_auth.password }}
+      --os-auth-url {{ os_project_auth.auth_url }}
+      --os-project-name {{ os_project_auth.project_name }}
+      --os-identity-api-version 3
+      --os-project-domain-name=default
+      --os-user-domain-name=default
+      security group list -f value -c ID -c Description --project={{ os_project.name }}
+    |grep 'Default security group'
+    |cut -d' ' -f1
+
+- name: Insert allow all rules into default security group
+  tags: os_project
+  when: os_project.default_secgroup_allow_all|default(false)
+  with_items: "{{ os_project_allow_all_secgroup_rules}}"
+  loop_control:
+    loop_var: inner_item
+  os_security_group_rule:
+    auth: "{{ os_project_auth }}"
+    security_group: "{{ registered_secgroup_id.stdout}}"
+    protocol: "{{ inner_item.protocol }}"
+    direction: "{{ inner_item.direction }}"
+    remote_ip_prefix: "{{ inner_item.remote_ip_prefix }}"
+    ethertype: "{{ inner_item.ethertype|default(omit)}}"
+

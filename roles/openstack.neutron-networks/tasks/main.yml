@@ -1,0 +1,5 @@
+---
+- name: Create networks
+  tags: neutron
+  with_dict: "{{ os_networks }}"
+  include_tasks: networks.yml

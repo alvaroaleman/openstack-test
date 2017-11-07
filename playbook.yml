@@ -3,7 +3,7 @@
   become: true
   vars:
     openstack_master_address: "{{ ansible_default_ipv4.address }}"
-  tasks:
+  pre_tasks:
     - name: Set environment
       with_items:
         - LANG=en_US.utf-8
@@ -31,6 +31,12 @@
       template:
         src: answerfile.j2
         dest: /root/answerfile
-    - name: Execute packstack
-      when: registered_answerfile|changed
-      command: packstack --answer-file=/root/answerfile
+        #    - name: Execute packstack
+        #      when: registered_answerfile|changed
+        #      command: packstack --answer-file=/root/answerfile
+    - name: Install shade
+      yum:
+        name: python2-shade
+  roles:
+    - openstack.projects
+    - openstack.neutron-networks

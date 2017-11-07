@@ -1,0 +1,45 @@
+---
+# vars file for openstack.projects
+os_project_allow_all_secgroup_rules:
+  - protocol: tcp
+    direction: ingress
+    remote_ip_prefix: 0.0.0.0/0
+  - protocol: tcp
+    direction: ingress
+    remote_ip_prefix: ::/0
+    ethertype: IPv6
+  - protocol: tcp
+    direction: egress
+    remote_ip_prefix: 0.0.0.0/0
+  - protocol: tcp
+    direction: egress
+    remote_ip_prefix: ::/0
+    ethertype: IPv6
+  - protocol: udp
+    direction: ingress
+    remote_ip_prefix: 0.0.0.0/0
+  - protocol: udp
+    direction: ingress
+    remote_ip_prefix: ::/0
+    ethertype: IPv6
+  - protocol: udp
+    direction: egress
+    remote_ip_prefix: 0.0.0.0/0
+  - protocol: udp
+    direction: egress
+    remote_ip_prefix: ::/0
+    ethertype: IPv6
+  - protocol: icmp
+    direction: ingress
+    remote_ip_prefix: 0.0.0.0/0
+  - protocol: icmp
+    direction: ingress
+    remote_ip_prefix: ::/0
+    ethertype: IPv6
+  - protocol: icmp
+    direction: egress
+    remote_ip_prefix: 0.0.0.0/0
+  - protocol: icmp
+    direction: egress
+    remote_ip_prefix: ::/0
+    ethertype: IPv6

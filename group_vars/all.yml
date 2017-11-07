@@ -1,0 +1,31 @@
+os_auth:
+  username: admin
+  password: 4cfff0b45bed4994
+  auth_url: "http://{{ ansible_default_ipv4.address }}:5000/v3"
+os_dns_server: "8.8.8.8"
+os_external_netname: extnet
+os_projects:
+  - name: admin
+    default_secgroup_allow_all: True
+os_networks:
+  admin:
+    - name: "{{ os_external_netname }}"
+      provider_network_name: extnet
+      subnets:
+        - cidr: '192.168.121.0/24'
+          enable_dhcp: false
+          gateway_ip: '192.168.121.1'
+          allocation_pool:
+            start: '192.168.121.70'
+            end: '192.168.121.99'
+          dns_nameservers:
+            - "{{ os_dns_server }}"
+    - name: intnet01
+      external_netname: "{{ os_external_netname }}"
+      subnets:
+        - cidr: '10.0.0.0/24'
+          allocation_pool:
+            start: '10.0.0.2'
+            end: '10.0.0.254'
+          dns_nameservers:
+            - "{{ os_dns_server }}"
