@@ -1,0 +1,26 @@
+---
+- hosts: all
+  become: true
+  tasks:
+    - name: Set environment
+      with_items:
+        - LANG=en_US.utf-8
+        - LC_ALL=en_US.utf-8
+      lineinfile:
+        dest: /etc/environment
+        line: "{{ item }}"
+    - name: Stop and disable networkmanager
+      service:
+        name: NetworkManager
+        state: stopped
+        enabled: false
+    - name: Install release package
+      yum:
+        name: centos-release-openstack-pike
+    - name: Update all package
+      yum:
+        name: '*'
+        state: latest
+    - name: Install packstack
+      yum:
+        name: openstack-packstack
