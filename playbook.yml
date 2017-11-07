@@ -1,6 +1,8 @@
 ---
 - hosts: all
   become: true
+  vars:
+    openstack_master_address: "{{ ansible_default_ipv4.address }}"
   tasks:
     - name: Set environment
       with_items:
@@ -24,3 +26,11 @@
     - name: Install packstack
       yum:
         name: openstack-packstack
+    - name: Deploy answerfile
+      register: registered_answerfile
+      template:
+        src: answerfile.j2
+        dest: /root/answerfile
+    - name: Execute packstack
+      when: registered_answerfile|changed
+      command: packstack --answer-file=/root/answerfile

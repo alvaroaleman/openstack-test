@@ -38,18 +38,18 @@ CONFIG_NEUTRON_INSTALL=y
 CONFIG_HORIZON_INSTALL=y
 
 # Specify 'y' to install OpenStack Object Storage (swift). ['y', 'n']
-CONFIG_SWIFT_INSTALL=y
+CONFIG_SWIFT_INSTALL=n
 
 # Specify 'y' to install OpenStack Metering (ceilometer). ['y', 'n']
-CONFIG_CEILOMETER_INSTALL=y
+CONFIG_CEILOMETER_INSTALL=n
 
 # Specify 'y' to install OpenStack Telemetry Alarming (Aodh). Note
 # Aodh requires Ceilometer to be installed as well. ['y', 'n']
-CONFIG_AODH_INSTALL=y
+CONFIG_AODH_INSTALL=n
 
 # Specify 'y' to install OpenStack Metering as a Service (gnocchi).
 # ['y', 'n']
-CONFIG_GNOCCHI_INSTALL=y
+CONFIG_GNOCCHI_INSTALL=n
 
 # Specify 'y' to install OpenStack Events Service (panko). ['y', 'n']
 CONFIG_PANKO_INSTALL=n
@@ -93,14 +93,14 @@ CONFIG_DEBUG_MODE=n
 
 # Server on which to install OpenStack services specific to the
 # controller role (for example, API servers or dashboard).
-CONFIG_CONTROLLER_HOST=192.168.121.33
+CONFIG_CONTROLLER_HOST={{ openstack_master_address }}
 
 # List the servers on which to install the Compute service.
-CONFIG_COMPUTE_HOSTS=192.168.121.33
+CONFIG_COMPUTE_HOSTS={{ openstack_master_address }}
 
 # List of servers on which to install the network service such as
 # Compute networking (nova network) or OpenStack Networking (neutron).
-CONFIG_NETWORK_HOSTS=192.168.121.33
+CONFIG_NETWORK_HOSTS={{ openstack_master_address }}
 
 # Specify 'y' if you want to use VMware vCenter as hypervisor and
 # storage; otherwise, specify 'n'. ['y', 'n']
@@ -136,11 +136,11 @@ CONFIG_VCENTER_CLUSTER_NAMES=
 
 # (Unsupported!) Server on which to install OpenStack services
 # specific to storage servers such as Image or Block Storage services.
-CONFIG_STORAGE_HOST=192.168.121.33
+CONFIG_STORAGE_HOST={{ openstack_master_address }}
 
 # (Unsupported!) Server on which to install OpenStack services
 # specific to OpenStack Data Processing (sahara).
-CONFIG_SAHARA_HOST=192.168.121.33
+CONFIG_SAHARA_HOST={{ openstack_master_address }}
 
 # Comma-separated list of URLs for any additional yum repositories,
 # to use for installation.
@@ -273,7 +273,7 @@ CONFIG_SSL_CERT_SUBJECT_MAIL=admin@localhost.localdomain
 CONFIG_AMQP_BACKEND=rabbitmq
 
 # IP address of the server on which to install the AMQP service.
-CONFIG_AMQP_HOST=192.168.121.33
+CONFIG_AMQP_HOST={{ openstack_master_address }}
 
 # Specify 'y' to enable SSL for the AMQP service. ['y', 'n']
 CONFIG_AMQP_ENABLE_SSL=n
@@ -295,7 +295,7 @@ CONFIG_AMQP_AUTH_PASSWORD=PW_PLACEHOLDER
 # installation was not specified in CONFIG_MARIADB_INSTALL, specify
 # the IP address of an existing database server (a MariaDB cluster can
 # also be specified).
-CONFIG_MARIADB_HOST=192.168.121.33
+CONFIG_MARIADB_HOST={{ openstack_master_address }}
 
 # User name for the MariaDB administrative user.
 CONFIG_MARIADB_USER=root
@@ -548,6 +548,7 @@ CONFIG_CINDER_BACKEND=lvm
 # proof-of-concept installation of the Block Storage service (a file-
 # backed volume group is not suitable for production usage). ['y',
 # 'n']
+# TODO: Change for prod
 CONFIG_CINDER_VOLUMES_CREATE=y
 
 # Specify a custom name for the lvm cinder volume group
@@ -762,7 +763,7 @@ CONFIG_NOVA_PCI_PASSTHROUGH_WHITELIST=
 # The hypervisor driver to use with Nova. Can be either 'qemu' or
 # 'kvm'. Defaults to 'qemu' on virtual machines and 'kvm' on bare
 # metal hardware. For nested KVM set it explicitly to 'kvm'.
-CONFIG_NOVA_LIBVIRT_VIRT_TYPE=%{::default_hypervisor}
+CONFIG_NOVA_LIBVIRT_VIRT_TYPE=kvm
 
 # Password to use for OpenStack Networking (neutron) to authenticate
 # with the Identity service.
@@ -787,7 +788,7 @@ CONFIG_LBAAS_INSTALL=n
 
 # Specify 'y' to install OpenStack Networking's L3 Metering agent
 # ['y', 'n']
-CONFIG_NEUTRON_METERING_AGENT_INSTALL=y
+CONFIG_NEUTRON_METERING_AGENT_INSTALL=n
 
 # Specify 'y' to configure OpenStack Networking's Firewall-
 # as-a-Service (FWaaS). ['y', 'n']
@@ -813,7 +814,7 @@ CONFIG_NEUTRON_ML2_TENANT_NETWORK_TYPES=vxlan
 # namespace. ['logger', 'test', 'linuxbridge', 'openvswitch',
 # 'hyperv', 'ncs', 'arista', 'cisco_nexus', 'mlnx', 'l2population',
 # 'sriovnicswitch', 'ovn']
-CONFIG_NEUTRON_ML2_MECHANISM_DRIVERS=openvswitch
+CONFIG_NEUTRON_ML2_MECHANISM_DRIVERS=ovn
 
 # Comma-separated list of physical_network names with which flat
 # networks can be created. Use * to allow flat networks with arbitrary
@@ -845,7 +846,7 @@ CONFIG_NEUTRON_ML2_VNI_RANGES=10:100
 
 # Name of the L2 agent to be used with OpenStack Networking.
 # ['linuxbridge', 'openvswitch', 'ovn']
-CONFIG_NEUTRON_L2_AGENT=openvswitch
+CONFIG_NEUTRON_L2_AGENT=ovn
 
 # Comma separated list of supported PCI vendor devices defined by
 # vendor_id:product_id according to the PCI ID Repository.
@@ -878,7 +879,8 @@ CONFIG_NEUTRON_OVS_BRIDGE_MAPPINGS=extnet:br-ex
 # issuing the following command: packstack --allinone --os-neutron-
 # ovs-bridge-mappings=ext-net:br-ex --os-neutron-ovs-bridge-interfaces
 # =br-ex:eth0
-CONFIG_NEUTRON_OVS_BRIDGE_IFACES=
+# TODO: Change for prod
+CONFIG_NEUTRON_OVS_BRIDGE_IFACES=br-ex:eth0
 
 # Comma-separated list of Open vSwitch bridges that must be created
 # and connected to interfaces in compute nodes when flat or vlan type
@@ -930,7 +932,7 @@ CONFIG_NEUTRON_OVN_BRIDGE_MAPPINGS=extnet:br-ex
 # issuing the following command: packstack --allinone --os-neutron-
 # ovn-bridge-mappings=ext-net:br-ex --os-neutron-ovn-bridge-interfaces
 # =br-ex:eth0
-CONFIG_NEUTRON_OVN_BRIDGE_IFACES=
+CONFIG_NEUTRON_OVN_BRIDGE_IFACES=br-ex:eth0
 
 # Comma-separated list of Open vSwitch bridges that must be created
 # and connected to interfaces in compute nodes when flat or vlan type
@@ -1193,7 +1195,7 @@ CONFIG_HEAT_DOMAIN_ADMIN=heat_admin
 CONFIG_HEAT_DOMAIN_PASSWORD=PW_PLACEHOLDER
 
 # Specify 'y' to provision for demo usage and testing. ['y', 'n']
-CONFIG_PROVISION_DEMO=y
+CONFIG_PROVISION_DEMO=n
 
 # Specify 'y' to configure the OpenStack Integration Test Suite
 # (tempest) for testing. The test suite requires OpenStack Networking
@@ -1320,10 +1322,10 @@ CONFIG_CEILOMETER_EVENTS_BACKEND=database
 CONFIG_ENABLE_CEILOMETER_MIDDLEWARE=n
 
 # IP address of the server on which to install MongoDB.
-CONFIG_MONGODB_HOST=192.168.121.33
+CONFIG_MONGODB_HOST={{ openstack_master_address }}
 
 # IP address of the server on which to install the Redis server.
-CONFIG_REDIS_HOST=192.168.121.33
+CONFIG_REDIS_HOST={{ openstack_master_address }}
 
 # Port on which the Redis server listens.
 CONFIG_REDIS_PORT=6379

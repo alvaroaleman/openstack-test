@@ -6,6 +6,7 @@ Vagrant.configure("2") do |config|
   config.vm.synced_folder '.', '/vagrant', id: 'vagrant-root', disabled: true
 
   config.ssh.insert_key = false
+  config.ssh.forward_agent = true
 
   config.vm.provision :ansible do |ansible|
     ansible.playbook = "playbook.yml"
@@ -16,6 +17,7 @@ Vagrant.configure("2") do |config|
     lv.memory = 12288
     lv.keymap = "de"
     lv.nested = true
+    lv.cpu_mode = "host-passthrough"
     lv.machine_virtual_size = 100
   end
 end
