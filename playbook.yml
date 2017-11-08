@@ -26,6 +26,13 @@
     - name: Install packstack
       yum:
         name: openstack-packstack
+    - name: Create volume group
+      shell: >
+        pvcreate /dev/vdb &&
+        vgcreate cinder-volumes /dev/vdb &&
+        touch /var/vg-created
+      args:
+        creates: /var/vg-created
     - name: Deploy answerfile
       register: registered_answerfile
       template:

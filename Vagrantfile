@@ -20,5 +20,6 @@ Vagrant.configure("2") do |config|
     lv.nested = true
     lv.cpu_mode = "host-passthrough"
     lv.machine_virtual_size = 100
+    lv.storage :file, :size => '20G'
   end
 end
