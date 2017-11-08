@@ -7,45 +7,57 @@
       password: "{{ os_auth.password }}"
       auth_url: "{{ os_auth.auth_url }}"
       project_name: "{{ item.key }}"
+      project_domain_name: default
+      user_domain_name: default
     neutron_networks: "{{ item.value }}"
     neutron_internal_networks: "{{ item.value|rejectattr('provider_network_name', 'defined')|list }}"
     neutron_external_networks: "{{ item.value|selectattr('provider_network_name', 'defined')|list }}"
 
 - name: Check state for external networks
   tags: neutron
-  always_run: True
+  check_mode: false
   changed_when: False
   register: neutron_registered_external_networks
   with_items: "{{ neutron_external_networks }}"
+  loop_control:
+    loop_var: inner_item
   command:
     neutron
       --os-username {{ neutron_auth.username }}
       --os-password {{ neutron_auth.password }}
       --os-auth-url {{ neutron_auth.auth_url }}
       --os-tenant-name {{ neutron_auth.project_name }}
-      net-list --name {{ item.name }} -c name -f value
+      --os-project-domain-name=default
+      --os-user-domain-name=default
+      net-list --name {{ inner_item.name }} -c name -f value
 
 - name: Create external networks
   tags: neutron
   with_items: "{{ neutron_external_networks }}"
-  when: "{{ (neutron_registered_external_networks.results|selectattr('item.name', 'equalto', item.name)|list|first).stdout_lines|length == 0 }}"
+  loop_control:
+    loop_var: inner_item
+  when: (neutron_registered_external_networks.results|selectattr('inner_item.name', 'equalto', inner_item.name)|list|first).stdout_lines|length == 0
   command:
     neutron
       --os-username {{ neutron_auth.username }}
       --os-password {{ neutron_auth.password }}
       --os-auth-url {{ neutron_auth.auth_url }}
       --os-tenant-name {{ neutron_auth.project_name }}
-      net-create {{ item.name }}
-        --provider:network_type {{ item.provider_network_type|default('flat')}}
-        --provider:physical_network {{ item.provider_network_name }}
+      --os-project-domain-name=default
+      --os-user-domain-name=default
+      net-create {{ inner_item.name }}
+        --provider:network_type {{ inner_item.provider_network_type|default('flat')}}
+        --provider:physical_network {{ inner_item.provider_network_name }}
         --router:external
 
 - name: Create internal networks
   tags: neutron
   with_items: "{{ neutron_internal_networks }}"
+  loop_control:
+    loop_var: inner_item
   os_network:
     auth: "{{ neutron_auth }}"
-    name: "{{ item.name }}"
+    name: "{{ inner_item.name }}"
     external: False
 
 - name: Create subnets
@@ -53,27 +65,31 @@
   with_subelements:
     - "{{ neutron_networks }}"
     - subnets
+  loop_control:
+    loop_var: inner_item
   os_subnet:
     auth: "{{ neutron_auth }}"
-    name: "{{ item.0.name ~ '_' ~ item.1.cidr }}"
-    network_name: "{{ item.0.name }}"
-    allocation_pool_start:  "{{ item.1.allocation_pool.start }}"
-    allocation_pool_end: "{{ item.1.allocation_pool.end }}"
-    cidr: "{{ item.1.cidr }}"
-    dns_nameservers: "{{ item.1.dns_nameservers|default(omit)}}"
-    enable_dhcp: "{{ item.1.enable_dhcp|default(omit)}}"
-    gateway_ip: "{{ item.1.gateway_ip|default(omit)}}"
-    ip_version: "{{ item.1.ip_version|default(omit)}}"
-    ipv6_address_mode: "{{ item.1.ipv6_address_mode|default(omit)}}"
-    ipv6_ra_mode: "{{ item.1.ipv6_ra_mode|default(omit)}}"
+    name: "{{ inner_item.0.name ~ '_' ~ inner_item.1.cidr }}"
+    network_name: "{{ inner_item.0.name }}"
+    allocation_pool_start:  "{{ inner_item.1.allocation_pool.start }}"
+    allocation_pool_end: "{{ inner_item.1.allocation_pool.end }}"
+    cidr: "{{ inner_item.1.cidr }}"
+    dns_nameservers: "{{ inner_item.1.dns_nameservers|default(omit)}}"
+    enable_dhcp: "{{ inner_item.1.enable_dhcp|default(omit)}}"
+    gateway_ip: "{{ inner_item.1.gateway_ip|default(omit)}}"
+    ip_version: "{{ inner_item.1.ip_version|default(omit)}}"
+    ipv6_address_mode: "{{ inner_item.1.ipv6_address_mode|default(omit)}}"
+    ipv6_ra_mode: "{{ inner_item.1.ipv6_ra_mode|default(omit)}}"
 
 - name: Create routerports
   tags: neutron
   with_items: "{{ neutron_internal_networks }}"
-  when: "{{ item.external_netname is defined }}"
+  loop_control:
+    loop_var: inner_item
+  when: inner_item.external_netname is defined
   os_router:
     auth: "{{ neutron_auth }}"
     # Must be site unique.....
-    name: "{{ neutron_auth.project_name ~ '_router_' ~ item.external_netname }}"
-    network: "{{ item.external_netname }}"
-    interfaces: "[{% for sn in item.subnets %}'{{ item.name ~ '_' ~ sn.cidr }}'{% if not loop.last %}, {% endif %}{% endfor %}]"
+    name: "{{ neutron_auth.project_name ~ '_router_' ~ inner_item.external_netname }}"
+    network: "{{ inner_item.external_netname }}"
+    interfaces: "[{% for sn in inner_item.subnets %}'{{ inner_item.name ~ '_' ~ sn.cidr }}'{% if not loop.last %}, {% endif %}{% endfor %}]"

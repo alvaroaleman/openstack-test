@@ -3,4 +3,4 @@
 - name: Include project tasks
   tags: os_project
   with_items: "{{ os_projects }}"
-  include: project.yml
+  include_tasks: project.yml

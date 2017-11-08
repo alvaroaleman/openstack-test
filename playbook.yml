@@ -31,9 +31,11 @@
       template:
         src: answerfile.j2
         dest: /root/answerfile
-        #    - name: Execute packstack
-        #      when: registered_answerfile|changed
-        #      command: packstack --answer-file=/root/answerfile
+    - name: Execute packstack
+      when: registered_answerfile|changed
+      command: packstack --answer-file=/root/answerfile
+      args:
+        creates: /root/keystonerc_admin
     - name: Install shade
       yum:
         name: python2-shade
