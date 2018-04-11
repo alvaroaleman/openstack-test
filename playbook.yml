@@ -18,14 +18,21 @@
         enabled: false
     - name: Install release package
       yum:
-        name: centos-release-openstack-pike
+        name: centos-release-openstack-queens
     - name: Update all package
       yum:
         name: '*'
         state: latest
-    - name: Install packstack
+    - name: Install packstack and deps
+      with_items:
+        - openstack-packstack
+        - python2-setuptools
       yum:
-        name: openstack-packstack
+        name: "{{ item }}"
+    - name: Set environment variable for V3 Identity api
+      lineinfile:
+        dest: /etc/environment
+        line: export OS_IDENTITY_API_VERSION=3
     - name: Create volume group
       shell: >
         pvcreate /dev/vdb &&
